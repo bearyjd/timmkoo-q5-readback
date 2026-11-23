@@ -29,3 +29,25 @@ TX a0 RX (timeout)
 TX a0 RX (timeout)
 Standard handshake did not complete
 ```
+
+## Offline SP Flash Tool backend selection
+
+The device-isolated debugger stopped at the connection entry point. Selector
+`0` is the unset value. The historical adapter log records that the
+scatter-free hardware run used library version 2.
+
+| Configuration | Observed assignments | Selector at connect |
+| --- | --- | --- |
+| Scatter-free USB | None | 0 |
+| Stock scatter with USB | 2, then 1 | 1 |
+| Stock scatter with UART | 2, then 1 | 1 |
+
+## Stock restore and corrected readback
+
+The Download Only configuration enabled `BOOTIMG` and `ANDROID` only.
+After a reconnect, a debugger found SP Flash Tool waiting in
+`BRom_AutoBoot::BRom_StartCmd`. The attempt stopped there with no image transfer.
+
+The subsequent `power="WithoutBattery"` readback opened `/dev/ttyACM0`
+and stalled at the same opening handshake. The 110-second outer timeout
+returned exit 124 and no readback file.
