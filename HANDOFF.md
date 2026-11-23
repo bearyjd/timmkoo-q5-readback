@@ -2,13 +2,13 @@
 
 ## Goal
 
-Replace the stock Q5 firmware. First get a recoverable copy of the installed firmware using native Linux. Then establish a working custom-ROM baseline and assess an unofficial LineageOS 14.1 port using Lithium 7 as a reference. The Q5 may become a Wi-Fi home automation remote.
+Obtain a recoverable copy of the installed firmware through a verified readback path and restore normal stock boot if needed. Develop native Linux readback in parallel. Once backup and rollback are verified, establish a custom ROM baseline and assess an unofficial LineageOS 14.1 port using Lithium 7 as a reference. The Q5 may become a Wi-Fi home automation remote.
 
 ## Current state
 
-- Device is a Timmkoo Q5 with stock build `Q5-WV3.20` and Linux `3.4.67` dated September 2, 2022. A preloader handshake confirmed MediaTek `MT6582`, hardware subcode `0x8A00`. No flash writes or firmware backup occurred.
+- The Timmkoo Q5 last ran stock build `Q5-WV3.20` with Linux `3.4.67` dated September 2, 2022. One preloader run identified MediaTek `MT6582`, hardware subcode `0x8A00`. The owner reported that the player would not boot. A successful cold boot has yet to be verified. No flash writes or firmware backup occurred.
 - The replacement data cable works. Last observed USB state was `0e8d:2000` on Linux port `3-6` at 480 Mb/s. A reboot-scoped udev rule at `/run/udev/rules.d/78-q5-readback.rules` grants the current user access to that VID/PID. Recheck the connection and permissions after a host reboot.
-- The `win11-kindle` VM is shut off. The temporary EHCI configuration and MediaTek driver were removed, the staged guest files were recycled, and the original USB controller and CD-ROM configuration were verified. There is no physical Windows PC available.
+- An earlier `win11-kindle` VM test removed its temporary EHCI configuration and test driver. The later COM6 test installed a Microsoft Update Catalog MediaTek VCOM driver and left it installed. The final COM6 run released USB passthrough and restored the original CD-ROM. Access to a physical Windows PC has yet to be confirmed.
 
 ## Files in play
 

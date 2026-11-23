@@ -8,7 +8,7 @@ Restore normal stock boot on the Timmkoo Q5 previously running `Q5-WV3.20`, if a
 
 - Reproduce the different SP Flash Tool backend decisions offline and identify the input or configuration that selects each path.
 - Confirm the proposed connection mode on real hardware with a read-only identification or readback run. Record the backend, chip ID or first failing stage, tool exit, and log path.
-- Before any write, verify the exact selected image files and partition list again. Use the already authorized stock WV3.25 boot and system scope only if the diagnostics establish a viable connection. A different image or wider write needs a separate decision.
+- Before any write, require a repeatable connection, verified storage reads, and evidence that the package matches the board and actual partition map. Recheck the image hashes and exact partition list. The authorized scope is WV3.25 boot and system in Download Only mode. A different package, wider write, or format needs a separate decision.
 - Verify any completed flash from the tool's terminal result, then confirm the player reaches the stock menu and can boot again. Record any remaining uncertainty.
 
 ## Execution
@@ -17,6 +17,13 @@ Restore normal stock boot on the Timmkoo Q5 previously running `Q5-WV3.20`, if a
 2. **Check documented configuration.** Look for a supported configuration that preserves the working serial connection while providing valid platform information. Check the vendor schema and Updater CE source before running a candidate. Keep the original scatter and vendor executables intact.
 3. **Verify on the device.** Run a bounded, read-only test requiring one powered-off reconnect. If the candidate never reaches the stage it is meant to test, inspect the first divergence before repeating the test.
 4. **Restore and verify boot.** If the previous gates pass, use Download Only with the verified partition selection, monitor every stage, and confirm stock boot with the user. If the viable route requires a different package, host, or broader write, identify that dependency with supporting evidence.
+
+## Backup and rollback gate
+
+- Record the device's verified board identification and partition map, including storage regions, offsets, and lengths. An exact build label or matching reference scatters alone cannot verify the installed layout.
+- For the current scope, back up the complete original `BOOTIMG` and `ANDROID` ranges and the metadata needed to locate them, including the on-device partition table. For a future scope, include the full original contents of every affected region, including bootloader, recovery, or device-specific calibration and configuration wherever the operation would touch them. If the tool cannot establish the full affected scope or read one of those regions, stop before writing.
+- Verify exact byte counts and matching SHA-256 hashes across independent reads of the stable target ranges. Record partition names, bounds, filenames, and hashes in a manifest and verify a second private copy. Check the rollback inputs against the actual layout and the tool's selected scope before starting.
+- Record which partitions were actually restored and verified. Tool success plus two stock boots verifies the selected stock restore. A rollback claim for a later ROM needs a successful recovery rehearsal covering every partition that ROM would modify, using a confirmed matching board and layout.
 
 ## Risks and mitigations
 
