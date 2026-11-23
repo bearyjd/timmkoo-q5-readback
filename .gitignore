@@ -1,0 +1,10 @@
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+# Device firmware, vendor tools, USB captures, and local run artifacts.
+/firmware/
+/.aws/
+/.agents/
+/.codex/
+/.omc/
+__pycache__/
