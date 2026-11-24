@@ -4,7 +4,7 @@
 
 Record the run ID, host and OS, cable and port, boot state, and whether the connection was fresh. Include tool version and hash, driver and backend, scatter and power settings, permissions, timeout, exit status, and evidence path. For readback runs, record the range, byte count, and SHA-256 if data was saved.
 
-Track the last confirmed stage and the first failed, unavailable, or unobserved stage. Use the order **USB enumeration → port or interface open → first protocol reply → handshake → chip ID → download-agent start → verified read**. Record stages the chosen read-only test does not request as outside its scope. An echoed byte counts as a reply and must still pass the expected handshake checks.
+Track the last confirmed stage and the first failed, unavailable, or unobserved stage. Use the order **USB enumeration → port or interface open → first protocol reply → handshake → chip ID → platform selection → download-agent upload and initialization → storage discovery → first read → verified read**. Platform selection can be specific to the host tool. Record stages the chosen read-only test does not request as outside its scope. An echoed byte counts as a reply and must still pass the expected handshake checks.
 
 Use up to two fresh powered-off reconnects per configuration, with a bounded timeout for each read-only run. Compare one variable at a time where possible. When the second attempt still fails, record the first failing stage and change a specific variable or stop. Record unavailable hosts, drivers, or capture permissions explicitly. Leave the write gate closed until storage readback and compatibility evidence pass.
 
@@ -15,6 +15,11 @@ Use up to two fresh powered-off reconnects per configuration, with a bounded tim
 | Windows VM COM6, fresh reconnect | Port open and opening writes completed | First protocol reply absent in the capture | `firmware/q5-windows-fresh.mQJnFH/summary.txt` |
 | Native libusb, fresh reconnect | First protocol reply | Opening byte echoed instead of the expected handshake response | `firmware/q5-usb-fresh.fne0dM/fresh-connection.log` |
 | Linux SP Flash Tool, limited restore attempt | Port open | Stalled at the opening handshake before download-agent start | `firmware/q5-limited-restore.GtnLd2/restore.log` |
+| Live serial probe, 2026-11-23 | Handshake `0x5F` | Not continued to chip ID; the unit booted Android | Station-only `q5catch/probe*.py` |
+| Live session, 2026-11-23 (boot) | Android booted, `Q5-WV3.20` baseline | ADB `offline` and USB debugging not enableable | On-device About screen |
+| Live preloader, echo sub-state | Port open (echo) | Opening byte returned verbatim (`a0` -> `a0`); no handshake | Station-only `q5catch/probe*.py` |
+| BROM entry attempt, Vol+/Vol-/Power | Boot splash then preloader | No `0e8d:0003` seen; bus monitor logged only `0e8d:2000` | Host `journalctl -k` during the attempt |
+| mtkclient serial, 2026-11-23 | Port open (echo sub-state) | Handshake never completed; no GPT or read produced | Station-only `q5catch/mtk-serial*.log` |
 
 ## SP Flash Tool on Linux
 
@@ -44,6 +49,15 @@ TX a0 RX (timeout)
 TX a0 RX (timeout)
 TX a0 RX (timeout)
 Standard handshake did not complete
+```
+
+## Live preloader handshake (2026-11-23)
+
+Left alone, the preloader floods `READY` on `/dev/ttyACM0` and resets after a few seconds (about a 14 s cycle on port `3-6`). A single `0xA0` is lost in that stream; retrying `0xA0` in a tight loop elicits `0x5F`, matching the historical SP Flash Tool sequence. DTR/RTS state does not change the result. The unit then booted Android `Q5-WV3.20`. Across power cycles the preloader also presented two other behaviours: **echo** (the opening byte returned verbatim, `a0` -> `a0`) and **silent** (no output). Only the READY-flood state accepts the handshake, and after repeated power cycles the device settled in the echo state. Holding Vol+/Vol-/Power did not reach BROM; a bus monitor observed only `0e8d:2000`.
+
+```text
+RX 52 45 41 44 59 52 45 41 44 59 ...   ("READY" repeated)
+TX a0 (retried) -> RX ... 5f
 ```
 
 ## Offline SP Flash Tool backend selection
